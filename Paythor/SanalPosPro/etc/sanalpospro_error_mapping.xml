@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<mapping xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Payment:etc/error_mapping.xsd">
+    <message_mapping>
+        <!-- HTTP-level errors -->
+        <item code="HTTP_400" translate="true">The payment request was invalid. Please check your details and try again.</item>
+        <item code="HTTP_401" translate="true">Payment authentication failed. Please contact the store administrator.</item>
+        <item code="HTTP_403" translate="true">Payment authorization denied. Please contact the store administrator.</item>
+        <item code="HTTP_404" translate="true">Payment service endpoint not found. Please try again later.</item>
+        <item code="HTTP_500" translate="true">Payment gateway encountered an internal error. Please try again later.</item>
+        <item code="HTTP_502" translate="true">Payment gateway is temporarily unavailable. Please try again later.</item>
+        <item code="HTTP_503" translate="true">Payment gateway is temporarily unavailable. Please try again later.</item>
+
+        <!-- Gateway-level errors -->
+        <item code="GATEWAY_ERROR" translate="true">An error occurred while processing your payment. Please try again.</item>
+        <item code="NULL_RESPONSE" translate="true">No response received from the payment gateway. Please try again.</item>
+
+        <!-- Payment status errors -->
+        <item code="PAYMENT_FAILED" translate="true">Your payment was not successful. Please try again or use a different payment method.</item>
+        <item code="PAYMENT_DECLINED" translate="true">Your payment was declined. Please check your card details or try a different card.</item>
+        <item code="PAYMENT_ERROR" translate="true">An error occurred during payment processing. Please try again.</item>
+
+        <!-- Card-specific errors -->
+        <item code="INSUFFICIENT_FUNDS" translate="true">Insufficient funds. Please try a different card.</item>
+        <item code="INVALID_CARD" translate="true">Invalid card details. Please check and try again.</item>
+        <item code="EXPIRED_CARD" translate="true">Your card has expired. Please use a different card.</item>
+        <item code="CARD_LIMIT_EXCEEDED" translate="true">Card limit exceeded. Please try a different card or contact your bank.</item>
+
+        <!-- 3D Secure errors -->
+        <item code="3D_SECURE_FAILED" translate="true">3D Secure verification failed. Please try again.</item>
+        <item code="3D_SECURE_TIMEOUT" translate="true">3D Secure verification timed out. Please try again.</item>
+    </message_mapping>
+</mapping>

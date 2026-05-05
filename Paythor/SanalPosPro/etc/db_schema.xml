@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+
+    <table name="paythor_transaction_log" resource="default" engine="innodb"
+           comment="Paythor SanalPos Pro Transaction Log">
+        <column xsi:type="int" name="log_id" unsigned="true" nullable="false" identity="true"
+                comment="Log ID"/>
+        <column xsi:type="int" name="order_id" unsigned="true" nullable="true"
+                comment="Magento Order Entity ID"/>
+        <column xsi:type="varchar" name="increment_id" nullable="true" length="50"
+                comment="Magento Order Increment ID"/>
+        <column xsi:type="varchar" name="paythor_transaction_id" nullable="true" length="128"
+                comment="Paythor Gateway Transaction ID"/>
+        <column xsi:type="varchar" name="payment_method" nullable="true" length="64"
+                comment="Payment method identifier"/>
+        <column xsi:type="varchar" name="action" nullable="false" length="32"
+                comment="Action: authorize, capture, refund, void, callback, webhook"/>
+        <column xsi:type="varchar" name="status" nullable="false" length="32"
+                comment="Result status: success, fail, pending"/>
+        <column xsi:type="decimal" name="amount" scale="4" precision="20" unsigned="false"
+                nullable="true" comment="Transaction amount"/>
+        <column xsi:type="varchar" name="currency" nullable="true" length="3"
+                comment="ISO 4217 currency code"/>
+        <column xsi:type="text" name="request_payload" nullable="true"
+                comment="Outgoing API request body (JSON)"/>
+        <column xsi:type="text" name="response_payload" nullable="true"
+                comment="Incoming API response body (JSON)"/>
+        <column xsi:type="varchar" name="error_code" nullable="true" length="64"
+                comment="Gateway error code if failed"/>
+        <column xsi:type="varchar" name="error_message" nullable="true" length="512"
+                comment="Human-readable error message"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false"
+                default="CURRENT_TIMESTAMP" comment="Record created timestamp"/>
+
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="log_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="PAYTHOR_TX_LOG_ORDER_ID_SALES_ORDER_ENTITY_ID"
+                    table="paythor_transaction_log" column="order_id"
+                    referenceTable="sales_order" referenceColumn="entity_id"
+                    onDelete="SET NULL"/>
+
+        <index referenceId="PAYTHOR_TX_LOG_ORDER_ID" indexType="btree">
+            <column name="order_id"/>
+        </index>
+        <index referenceId="PAYTHOR_TX_LOG_PAYTHOR_TRANSACTION_ID" indexType="btree">
+            <column name="paythor_transaction_id"/>
+        </index>
+        <index referenceId="PAYTHOR_TX_LOG_ACTION_STATUS" indexType="btree">
+            <column name="action"/>
+            <column name="status"/>
+        </index>
+        <index referenceId="PAYTHOR_TX_LOG_CREATED_AT" indexType="btree">
+            <column name="created_at"/>
+        </index>
+    </table>
+
+</schema>

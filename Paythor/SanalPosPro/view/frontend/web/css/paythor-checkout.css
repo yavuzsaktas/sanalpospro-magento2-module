@@ -1,0 +1,120 @@
+/* =========================================================
+   Paythor SanalPosPro – Checkout Payment Method & Modal
+   ========================================================= */
+
+.payment-method .paythor-sanalpospro-notice {
+    margin: 12px 0 16px;
+    padding: 12px 16px;
+    background: #f7f8fa;
+    border-left: 3px solid #3b82f6;
+    border-radius: 4px;
+    color: #374151;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.payment-method .paythor-sanalpospro-cards {
+    display: inline-block;
+    height: 22px;
+    width: auto;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.payment-method .paythor-sanalpospro-sandbox-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 10px;
+    color: #92400e;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    vertical-align: middle;
+}
+
+/* Modal overlay & wrapper */
+.paythor-sanalpospro-modal .modal-inner-wrap {
+    max-width: 580px;
+    margin: 40px auto;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+.paythor-sanalpospro-modal .modal-header {
+    background: linear-gradient(135deg, #1e3a5f, #2563eb);
+    padding: 16px 24px;
+}
+
+.paythor-sanalpospro-modal .modal-header .modal-title {
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.paythor-sanalpospro-modal .action-close {
+    color: #ffffff;
+}
+
+.paythor-sanalpospro-modal .action-close:hover {
+    color: #bfdbfe;
+}
+
+.paythor-sanalpospro-modal .modal-content {
+    padding: 0;
+    min-height: 420px;
+    background: #ffffff;
+}
+
+.paythor-sanalpospro-modal .modal-footer {
+    padding: 12px 24px;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+}
+
+.paythor-sanalpospro-modal .modal-footer .action-cancel {
+    min-width: 140px;
+    border-radius: 6px;
+}
+
+/* iframe inside modal */
+.paythor-sanalpospro-modal-content iframe {
+    width: 100%;
+    min-height: 420px;
+    border: none;
+    display: block;
+}
+
+/* Secure badge inside template */
+.paythor-sanalpospro-secure-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.paythor-sanalpospro-secure-info .lock-icon::before {
+    content: '\1F512';
+    font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .paythor-sanalpospro-modal .modal-inner-wrap {
+        max-width: 100%;
+        margin: 0;
+        border-radius: 0;
+        min-height: 100vh;
+    }
+
+    .paythor-sanalpospro-modal-content iframe {
+        min-height: 360px;
+    }
+}

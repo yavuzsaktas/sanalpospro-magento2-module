@@ -1,0 +1,30 @@
+{
+    "paythor_transaction_log": {
+        "column": {
+            "log_id": true,
+            "order_id": true,
+            "increment_id": true,
+            "paythor_transaction_id": true,
+            "payment_method": true,
+            "action": true,
+            "status": true,
+            "amount": true,
+            "currency": true,
+            "request_payload": true,
+            "response_payload": true,
+            "error_code": true,
+            "error_message": true,
+            "created_at": true
+        },
+        "index": {
+            "PAYTHOR_TX_LOG_ORDER_ID": true,
+            "PAYTHOR_TX_LOG_PAYTHOR_TRANSACTION_ID": true,
+            "PAYTHOR_TX_LOG_ACTION_STATUS": true,
+            "PAYTHOR_TX_LOG_CREATED_AT": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "PAYTHOR_TX_LOG_ORDER_ID_SALES_ORDER_ENTITY_ID": true
+        }
+    }
+}
