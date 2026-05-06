@@ -87,6 +87,25 @@ class Confirm implements HttpPostActionInterface, CsrfAwareActionInterface
             $pendingQuoteId = (int)$this->checkoutSession->getPaythorPendingQuoteId();
 
             if ($pendingQuoteId === 0 || $pendingQuoteId !== (int)$reference) {
+                // Guard: Callback.php (browser-redirect flow) may have already placed this order.
+                $alreadyCreatedOrderId = (int)$this->checkoutSession->getPaythorCreatedOrderId();
+                if ($alreadyCreatedOrderId > 0) {
+                    $this->logger->info('Paythor Confirm: order already created by browser-redirect flow, returning success', [
+                        'order_id'  => $alreadyCreatedOrderId,
+                        'reference' => $reference,
+                    ]);
+                    $order = $this->orderRepository->get($alreadyCreatedOrderId);
+                    $this->checkoutSession
+                        ->setLastQuoteId($order->getQuoteId())
+                        ->setLastSuccessQuoteId($order->getQuoteId())
+                        ->setLastOrderId($order->getId())
+                        ->setLastRealOrderId($order->getIncrementId())
+                        ->setLastOrderStatus($order->getStatus());
+                    return $result->setData([
+                        'success'      => true,
+                        'redirect_url' => $this->urlBuilder->getUrl('checkout/onepage/success'),
+                    ]);
+                }
                 $this->logger->warning('Paythor Confirm: session/reference mismatch', [
                     'reference'       => $reference,
                     'pending_quote_id' => $pendingQuoteId,
@@ -99,6 +118,22 @@ class Confirm implements HttpPostActionInterface, CsrfAwareActionInterface
 
             if (!$this->isValidQuote($quote)) {
                 throw new LocalizedException(__('Your cart is empty or has already been processed.'));
+            }
+
+            // Guard: Callback.php may have won the race and placed the order after our session check.
+            $alreadyCreatedOrderId = (int)$this->checkoutSession->getPaythorCreatedOrderId();
+            if ($alreadyCreatedOrderId > 0) {
+                $order = $this->orderRepository->get($alreadyCreatedOrderId);
+                $this->checkoutSession
+                    ->setLastQuoteId($order->getQuoteId())
+                    ->setLastSuccessQuoteId($order->getQuoteId())
+                    ->setLastOrderId($order->getId())
+                    ->setLastRealOrderId($order->getIncrementId())
+                    ->setLastOrderStatus($order->getStatus());
+                return $result->setData([
+                    'success'      => true,
+                    'redirect_url' => $this->urlBuilder->getUrl('checkout/onepage/success'),
+                ]);
             }
 
             // -- 4. Convert quote → order (happens here, not in Create.php) ---
@@ -163,6 +198,7 @@ class Confirm implements HttpPostActionInterface, CsrfAwareActionInterface
             }
 
             // -- 5. Clear pending ID + set checkout session -------------------
+            $this->checkoutSession->setPaythorCreatedOrderId((int)$orderId);
             $this->checkoutSession->unsPaythorPendingQuoteId();
 
             $this->checkoutSession

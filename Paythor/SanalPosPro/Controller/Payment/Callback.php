@@ -143,6 +143,34 @@ class Callback implements HttpGetActionInterface, CsrfAwareActionInterface
                 return $redirect->setPath('checkout/cart');
             }
 
+            // Guard: Confirm.php (postMessage flow) may have already placed this order.
+            $alreadyCreatedOrderId = (int)$this->checkoutSession->getPaythorCreatedOrderId();
+            if ($alreadyCreatedOrderId > 0) {
+                $this->logger->info('Paythor Callback: order already created by postMessage flow, skipping duplicate', [
+                    'order_id'      => $alreadyCreatedOrderId,
+                    'process_token' => substr($processToken, 0, 16) . '...',
+                ]);
+                // Refresh session data so SuccessValidator passes even if a new payment
+                // attempt updated lastQuoteId in the meantime.
+                try {
+                    $existingOrder = $this->orderRepository->get($alreadyCreatedOrderId);
+                    $this->checkoutSession
+                        ->setLastQuoteId($existingOrder->getQuoteId())
+                        ->setLastSuccessQuoteId($existingOrder->getQuoteId())
+                        ->setLastOrderId($existingOrder->getId())
+                        ->setLastRealOrderId($existingOrder->getIncrementId())
+                        ->setLastOrderStatus($existingOrder->getStatus());
+                } catch (\Throwable $ignored) {
+                }
+                return $redirect->setPath('checkout/onepage/success');
+            }
+
+            // Provide a non-empty placeholder transaction ID so Magento's capture command
+            // (triggered by authorize_capture payment action) can build a transaction record
+            // during placeOrder(). The real Paythor transaction ID is written by markPaid().
+            $quote->getPayment()->setAdditionalInformation('paythor_process_token', $processToken);
+            $this->cartRepository->save($quote);
+
             // -- 1. Convert quote → order (cart is still active up to this point) --
             $orderId = $this->cartManagement->placeOrder((int)$quote->getId());
             /** @var Order $order */
@@ -160,6 +188,7 @@ class Callback implements HttpGetActionInterface, CsrfAwareActionInterface
 
             // Update checkout session so the success page renders correctly
             // regardless of the payment status outcome below.
+            $this->checkoutSession->setPaythorCreatedOrderId((int)$orderId);
             $this->checkoutSession->unsPaythorPendingQuoteId();
             $this->checkoutSession
                 ->setLastQuoteId($quote->getId())

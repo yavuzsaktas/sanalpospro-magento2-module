@@ -14,7 +14,8 @@ class CaptureDataBuilder implements BuilderInterface
         $payment   = $paymentDO->getPayment();
 
         $transactionId = $payment->getLastTransId()
-            ?: $payment->getAdditionalInformation('paythor_transaction_id');
+            ?: $payment->getAdditionalInformation('paythor_transaction_id')
+            ?: $payment->getAdditionalInformation('paythor_process_token');
 
         return [
             '__action'       => 'capture',

@@ -62,6 +62,15 @@ class PaymentStateManager
                     'message' => $e->getMessage(),
                 ]);
             }
+        } elseif ($transactionId !== '') {
+            // Invoice was already created during placeOrder() (authorize_capture flow) with a
+            // process-token placeholder. Update it with the real Paythor transaction ID.
+            foreach ($order->getInvoiceCollection() as $existingInvoice) {
+                if ($existingInvoice->getState() !== Invoice::STATE_CANCELED) {
+                    $existingInvoice->setTransactionId($transactionId)->save();
+                    break;
+                }
+            }
         }
 
         $order->setState(Order::STATE_PROCESSING)
