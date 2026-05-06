@@ -1,4 +1,4 @@
-# Paythor SanalPosPro - Development Phases
+# SanalPosPro - Development Phases
 
 This document summarizes the three-phase development process of the `Paythor_SanalPosPro` and `Eticsoft_PaythorClient` modules with technical details.
 
@@ -11,7 +11,7 @@ Eticsoft_PaythorClient          Paythor_SanalPosPro
   (API Client)                    (Payment Integration)
   ├─ SDK logic                    ├─ Gateway API (Phase 2)
   ├─ HTTP requests                ├─ Admin Config (Phase 1)
-  └─ Paythor API communication    ├─ Checkout UI (Phase 3)
+  └─ SanalPosPro API communication├─ Checkout UI (Phase 3)
                                   └─ Observer / Handler
 ```
 
@@ -96,7 +96,7 @@ CommandPool (di.xml)
 | **Gateway/Request/VoidDataBuilder.php** | `action: void`, `transaction_id`. |
 | **Gateway/Response/TransactionIdHandler.php** | Parses `transaction_id` from the API response and stores it with `Payment->setTransactionId()`. |
 | **Gateway/Response/PaymentDetailsHandler.php** | Stores additional details from the API response (`status`, `process_id`, etc.) with `Payment->setAdditionalInformation()`. |
-| **Gateway/Validator/GeneralResponseValidator.php** | Extension of `AbstractValidator`. Checks the HTTP status code, `success` flag, and Paythor-specific error states. |
+| **Gateway/Validator/GeneralResponseValidator.php** | Extension of `AbstractValidator`. Checks the HTTP status code, `success` flag, and SanalPosPro-specific error states. |
 | **Observer/DataAssignObserver.php** | Extension of `AbstractDataAssignObserver`. Maps `additional_data` from the frontend to `PaymentInfo.additionalInformation`. Allowed keys: `paythor_token`, `payment_method`. |
 | **Model/Ui/ConfigProvider.php** | `ConfigProviderInterface` implementation. Provides `isActive`, `title`, `isSandbox`, and `paymentAction` data under `window.checkoutConfig.payment.paythor_sanalpospro`. |
 | **Model/Api/PaythorAdapter.php** | Bridge methods were added to the existing adapter: `createPaymentFromGateway()`, `captureFromGateway()`, `refundFromGateway()`, `voidFromGateway()`, `normalizeApiResponse()`. |
@@ -108,7 +108,7 @@ CommandPool (di.xml)
 ### Technical Decisions
 - The Gateway API layer was wrapped with the **bridge pattern** without breaking the existing `PaythorAdapter` SDK logic. `PaythorGatewayClient` does not make direct HTTP calls; it delegates the operation to the adapter.
 - `ObjectManager` was not used anywhere; all dependencies were injected through DI with Constructor Injection.
-- `GeneralResponseValidator` handles both general HTTP errors and Paythor API-specific error codes.
+- `GeneralResponseValidator` handles both general HTTP errors and SanalPosPro API-specific error codes.
 - Handler classes were kept simple: they only assign data and do not contain business logic (`.cursorrules` rule).
 
 ### Verification
@@ -136,14 +136,14 @@ Complete the rendering of the payment method as a Knockout.js UI Component on th
 3. AJAX POST -> paythor/payment/create
    │   -> Backend CreateController returns iframe HTML
    │
-4. Modal opens -> Paythor iframe is displayed
-   │   -> Customer enters card details in Paythor's secure form
+4. Modal opens -> SanalPosPro iframe is displayed
+   │   -> Customer enters card details in SanalPosPro's secure form
    │
-5a. postMessage (Paythor iframe -> parent window)
+5a. postMessage (SanalPosPro iframe -> parent window)
    │   ├─ Success: _sendConfirmRequest() -> order is created -> redirect
    │   └─ Failure: modal closes, error message is shown, cart is preserved
    │
-5b. Callback bridge (Paythor redirect -> Callback.php -> postMessage)
+5b. Callback bridge (SanalPosPro redirect -> Callback.php -> postMessage)
        └─ Same flow
 ```
 
@@ -189,7 +189,7 @@ Gateway CommandPool -> Request Builders -> PaythorGatewayClient -> PaythorAdapte
 - Because the payment form is iframe/redirect-based (card details are not collected in Magento), `Magento_Checkout/js/view/payment/default` was extended instead of `Magento_Payment/js/view/payment/cc-form`. Although `.cursorrules` recommends `cc-form`, `default` is the correct choice for this architecture.
 - `redirectAfterPlaceOrder: false` -> Magento's default redirect is disabled; the flow is managed entirely through custom AJAX.
 - When the modal closes (`closed` callback), the cart is preserved so the customer can try again.
-- The PostMessage listener listens to two sources: (A) directly from the Paythor iframe, and (B) from the Callback.php bridge.
+- The PostMessage listener listens to two sources: (A) directly from the SanalPosPro iframe, and (B) from the Callback.php bridge.
 
 ### Verification
 ```bash
