@@ -3,7 +3,7 @@
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
     <menu>
         <add id="Paythor_SanalPosPro::paythor_root"
-             title="Paythor"
+             title="SanalPos Pro"
              module="Paythor_SanalPosPro"
              sortOrder="920"
              parent="Magento_Backend::stores"
