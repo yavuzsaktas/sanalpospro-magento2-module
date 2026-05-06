@@ -366,7 +366,13 @@ class PaythorAdapter
 
         // --- Invoice ---
         $invoice = new Invoice();
-        $orderRef = (string)($quote->getReservedOrderId() ?: $quote->getId());
+        $reservedOrderId = $quote->getReservedOrderId();
+        if (!$reservedOrderId) {
+            $this->logger->warning('Paythor: quote has no reserved_order_id, falling back to quote ID as merchant_reference', [
+                'quote_id' => $quote->getId(),
+            ]);
+        }
+        $orderRef = (string)($reservedOrderId ?: $quote->getId());
         $invoice->setId($orderRef);
         $invoice->setFirstName($firstName);
         $invoice->setLastName($lastName);
@@ -835,6 +841,31 @@ class PaythorAdapter
             'transaction_id' => $transactionId,
             'amount'         => $amount,
         ]);
+
+        if ($transactionId === '') {
+            $this->logger->info('PaythorAdapter::captureFromGateway: no transaction_id — payment handled by iframe flow, skipping gateway capture');
+            return [
+                'paythor_status' => 'initiated',
+                'transaction_id' => '',
+                'amount'         => $amount,
+                'currency'       => $currency,
+            ];
+        }
+
+        // Non-numeric = process token used as placeholder (set by Callback.php before placeOrder()
+        // so Magento's Transaction builder receives a non-empty ID). Skip the API call here;
+        // the real Paythor capture and invoice creation happen in markPaid() after status check.
+        if (!is_numeric($transactionId)) {
+            $this->logger->info('PaythorAdapter::captureFromGateway: process token placeholder, deferring capture to markPaid', [
+                'token_prefix' => substr($transactionId, 0, 16) . '...',
+            ]);
+            return [
+                'paythor_status' => 'initiated',
+                'transaction_id' => $transactionId,
+                'amount'         => $amount,
+                'currency'       => $currency,
+            ];
+        }
 
         $client = $this->getClient($storeId);
 

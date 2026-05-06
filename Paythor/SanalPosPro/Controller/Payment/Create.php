@@ -103,6 +103,9 @@ class Create implements HttpPostActionInterface, CsrfAwareActionInterface
             $payment = $this->paythorAdapter->createPaymentFromQuote($quote, $callbackUrl, $remoteIp);
 
             // -- 6. Store pending quote ID so Confirm.php can verify session --
+            // Clear any stale PaythorCreatedOrderId from a previous payment so the
+            // Callback guard doesn't fire against the wrong order.
+            $this->checkoutSession->unsPaythorCreatedOrderId();
             $this->checkoutSession->setPaythorPendingQuoteId((int)$quote->getId());
 
             return $result->setData([

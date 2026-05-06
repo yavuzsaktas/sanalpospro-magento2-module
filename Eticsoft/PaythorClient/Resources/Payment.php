@@ -35,9 +35,6 @@ class Payment extends Resource
     /**
      * Capture a payment.
      *
-     * Capture::toArray() already wraps under 'capture' key,
-     * so we pass it directly without additional nesting.
-     *
      * @param string $token Payment token
      * @param Capture $captureData Capture data including amount, currency, payment instrument
      * @return array|null
