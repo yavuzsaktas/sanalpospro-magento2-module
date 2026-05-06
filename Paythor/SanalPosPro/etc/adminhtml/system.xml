@@ -14,6 +14,12 @@
                 <comment><![CDATA[Custom hybrid iframe payment integration. Webhook URL: <code>{base_url}paythor/webhook/notify</code>]]></comment>
                 <fieldset_css>complex paythor-sanalpospro-section</fieldset_css>
 
+                <field id="paythor_connect_link" translate="label comment" type="label" sortOrder="26"
+                       showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Account Connection</label>
+                    <comment><![CDATA[Go to <strong>Stores → Paythor → Connect Account</strong> in the left sidebar to connect your account. API keys and App ID are saved automatically.]]></comment>
+                </field>
+
                 <field id="active" translate="label" type="select" sortOrder="10"
                        showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Enabled</label>
@@ -25,28 +31,6 @@
                        showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Title</label>
                     <config_path>payment/paythor_sanalpospro/title</config_path>
-                </field>
-
-                <field id="app_id" translate="label comment" type="text" sortOrder="22"
-                       showInDefault="1" showInWebsite="0" showInStore="0">
-                    <label>Magento App ID</label>
-                    <comment><![CDATA[Auto-configured as <strong>105</strong> (Magento SanalPOS PRO). Confirmed automatically during account connection.]]></comment>
-                    <config_path>payment/paythor_sanalpospro/app_id</config_path>
-                    <validate>validate-digits</validate>
-                </field>
-
-                <field id="paythor_connect_link" translate="label comment" type="label" sortOrder="26"
-                       showInDefault="1" showInWebsite="0" showInStore="0">
-                    <label>Account Connection</label>
-                    <comment><![CDATA[Go to <strong>Stores → Paythor → Connect Account</strong> in the left sidebar to connect your account. API keys and App ID are saved automatically.]]></comment>
-                </field>
-
-                <field id="sandbox_mode" translate="label comment" type="select" sortOrder="30"
-                       showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Sandbox Mode</label>
-                    <comment>Use Paythor sandbox endpoint for testing.</comment>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <config_path>payment/paythor_sanalpospro/sandbox_mode</config_path>
                 </field>
 
                 <field id="payment_action" translate="label" type="select" sortOrder="70"
