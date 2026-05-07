@@ -126,49 +126,58 @@ class Callback implements HttpGetActionInterface, CsrfAwareActionInterface
 
         try {
             $pendingQuoteId = (int)$this->checkoutSession->getPaythorPendingQuoteId();
+            $alreadyCreatedOrderId = (int)$this->checkoutSession->getPaythorCreatedOrderId();
 
+            // The postMessage flow (Confirm.php) may have already placed the order
+            // and cleared paythorPendingQuoteId before Paythor's window.top redirect
+            // hits this controller. In that case we must NOT route the customer to
+            // the cart — the order is real, just send them to the success page.
             if ($pendingQuoteId === 0) {
+                if ($alreadyCreatedOrderId > 0) {
+                    return $this->redirectToSuccessForExistingOrder($redirect, $alreadyCreatedOrderId, $processToken);
+                }
+
                 $this->logger->warning('Paythor Callback: no pending quote in session', [
                     'process_token' => substr($processToken, 0, 16) . '...',
                 ]);
                 return $redirect->setPath('checkout/cart');
             }
 
+            // Same race: postMessage flow may have placed the order in parallel.
+            // If so, skip duplicate placement and just redirect to success.
+            if ($alreadyCreatedOrderId > 0) {
+                return $this->redirectToSuccessForExistingOrder($redirect, $alreadyCreatedOrderId, $processToken);
+            }
+
             $quote = $this->cartRepository->getActive($pendingQuoteId);
 
             if (!$quote || (int)$quote->getId() === 0 || (float)$quote->getGrandTotal() <= 0) {
+                // Quote is no longer active — typically because Confirm.php just
+                // placed the order from it. Re-check the created order ID and, if
+                // present, send the customer to success instead of cart.
+                $alreadyCreatedOrderId = (int)$this->checkoutSession->getPaythorCreatedOrderId();
+                if ($alreadyCreatedOrderId > 0) {
+                    return $this->redirectToSuccessForExistingOrder($redirect, $alreadyCreatedOrderId, $processToken);
+                }
+
                 $this->logger->warning('Paythor Callback: pending quote not found or empty', [
                     'pending_quote_id' => $pendingQuoteId,
                 ]);
                 return $redirect->setPath('checkout/cart');
             }
 
-            // Guard: Confirm.php (postMessage flow) may have already placed this order.
-            $alreadyCreatedOrderId = (int)$this->checkoutSession->getPaythorCreatedOrderId();
-            if ($alreadyCreatedOrderId > 0) {
-                $this->logger->info('Paythor Callback: order already created by postMessage flow, skipping duplicate', [
-                    'order_id'      => $alreadyCreatedOrderId,
-                    'process_token' => substr($processToken, 0, 16) . '...',
-                ]);
-                // Refresh session data so SuccessValidator passes even if a new payment
-                // attempt updated lastQuoteId in the meantime.
-                try {
-                    $existingOrder = $this->orderRepository->get($alreadyCreatedOrderId);
-                    $this->checkoutSession
-                        ->setLastQuoteId($existingOrder->getQuoteId())
-                        ->setLastSuccessQuoteId($existingOrder->getQuoteId())
-                        ->setLastOrderId($existingOrder->getId())
-                        ->setLastRealOrderId($existingOrder->getIncrementId())
-                        ->setLastOrderStatus($existingOrder->getStatus());
-                } catch (\Throwable $ignored) {
-                }
-                return $redirect->setPath('checkout/onepage/success');
-            }
+            // (Race guard already handled above: if Confirm.php beat us to placeOrder()
+            // we returned a success redirect via redirectToSuccessForExistingOrder().)
 
             // Provide a non-empty placeholder transaction ID so Magento's capture command
             // (triggered by authorize_capture payment action) can build a transaction record
             // during placeOrder(). The real Paythor transaction ID is written by markPaid().
-            $quote->getPayment()->setAdditionalInformation('paythor_process_token', $processToken);
+            $quote->getPayment()
+                ->setAdditionalInformation('paythor_process_token', $processToken)
+                ->setAdditionalInformation('paythor_token', $processToken)
+                ->setAdditionalInformation('paythor_transaction_id', $processToken)
+                ->setLastTransId($processToken)
+                ->setTransactionId($processToken);
             $this->cartRepository->save($quote);
 
             // -- 1. Convert quote → order (cart is still active up to this point) --
@@ -275,6 +284,37 @@ class Callback implements HttpGetActionInterface, CsrfAwareActionInterface
             ]);
             return $redirect->setPath('checkout/cart');
         }
+    }
+
+    /**
+     * Re-hydrate the checkout session for an order that was already placed by
+     * Confirm.php (the postMessage flow) and send the customer to the standard
+     * Magento success page. This guarantees Magento's SuccessValidator passes
+     * even if other tabs / new payment attempts have mutated the session in
+     * the meantime.
+     */
+    private function redirectToSuccessForExistingOrder(
+        \Magento\Framework\Controller\Result\Redirect $redirect,
+        int $orderId,
+        string $processToken
+    ): \Magento\Framework\Controller\Result\Redirect {
+        $this->logger->info('Paythor Callback: order already placed by postMessage flow, redirecting to success', [
+            'order_id'      => $orderId,
+            'process_token' => substr($processToken, 0, 16) . '...',
+        ]);
+
+        try {
+            $existingOrder = $this->orderRepository->get($orderId);
+            $this->checkoutSession
+                ->setLastQuoteId($existingOrder->getQuoteId())
+                ->setLastSuccessQuoteId($existingOrder->getQuoteId())
+                ->setLastOrderId($existingOrder->getId())
+                ->setLastRealOrderId($existingOrder->getIncrementId())
+                ->setLastOrderStatus($existingOrder->getStatus());
+        } catch (\Throwable $ignored) {
+        }
+
+        return $redirect->setPath('checkout/onepage/success');
     }
 
     /**

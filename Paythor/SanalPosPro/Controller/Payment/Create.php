@@ -89,12 +89,33 @@ class Create implements HttpPostActionInterface, CsrfAwareActionInterface
             }
 
             // -- 4. Stamp payment method on the quote (no order yet) ----------
-            $quote->getPayment()->setMethod(PaymentConfig::METHOD_CODE);
-            if (!$quote->getReservedOrderId()) {
-                $quote->reserveOrderId();
-            }
+            // Always start a fresh payment attempt for this quote. If the customer
+            // abandoned a previous iframe, stale process/transaction metadata can be
+            // copied into a later placeOrder() run and cause gateway collisions.
+            $payment = $quote->getPayment();
+            $payment->setMethod(PaymentConfig::METHOD_CODE);
+            $payment->setLastTransId(null);
+            $payment->unsAdditionalInformation('paythor_process_token');
+            $payment->unsAdditionalInformation('paythor_transaction_id');
+            $payment->unsAdditionalInformation('paythor_status');
+
+            // Force a new merchant reference for every create attempt.
+            // Reusing the same reserved_order_id after an abandoned attempt can
+            // make Paythor treat the request as an update to an old payment.
+            $oldReservedOrderId = (string)$quote->getReservedOrderId();
+            $quote->setReservedOrderId(null);
+            $quote->reserveOrderId();
+            $newReservedOrderId = (string)$quote->getReservedOrderId();
             $quote->collectTotals();
             $this->cartRepository->save($quote);
+
+            if ($oldReservedOrderId !== '' && $oldReservedOrderId !== $newReservedOrderId) {
+                $this->logger->info('Paythor Create: reserved_order_id rotated for new payment attempt', [
+                    'quote_id'        => (int)$quote->getId(),
+                    'old_reference'   => $oldReservedOrderId,
+                    'new_reference'   => $newReservedOrderId,
+                ]);
+            }
 
             // -- 5. Request payment link from Paythor -------------------------
             $callbackUrl = $this->urlBuilder->getUrl('paythor/payment/callback', ['_secure' => true]);

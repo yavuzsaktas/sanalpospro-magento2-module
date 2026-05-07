@@ -19,6 +19,7 @@ class TransactionIdHandler implements HandlerInterface
         $transactionId = $response['transaction_id'] ?? $response['paythor_transaction_id'] ?? null;
         if ($transactionId !== null) {
             $payment->setTransactionId((string) $transactionId);
+            $payment->setLastTransId((string) $transactionId);
             $payment->setAdditionalInformation('paythor_transaction_id', (string) $transactionId);
         }
 

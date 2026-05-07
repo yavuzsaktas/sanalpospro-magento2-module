@@ -137,6 +137,19 @@ class Confirm implements HttpPostActionInterface, CsrfAwareActionInterface
             }
 
             // -- 4. Convert quote → order (happens here, not in Create.php) ---
+            // Ensure Magento's authorize_capture pipeline always receives a non-empty
+            // transaction placeholder. Without this, placeOrder() can fail with
+            // "Please enter a Transaction ID." before the order is created.
+            if ($processId !== '') {
+                $quote->getPayment()
+                    ->setAdditionalInformation('paythor_process_token', $processId)
+                    ->setAdditionalInformation('paythor_token', $processId)
+                    ->setAdditionalInformation('paythor_transaction_id', $processId)
+                    ->setLastTransId($processId)
+                    ->setTransactionId($processId);
+                $this->cartRepository->save($quote);
+            }
+
             $orderId = $this->cartManagement->placeOrder((int)$quote->getId());
             /** @var Order $order */
             $order = $this->orderRepository->get((int)$orderId);

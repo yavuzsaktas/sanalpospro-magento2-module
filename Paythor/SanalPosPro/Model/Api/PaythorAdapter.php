@@ -813,14 +813,23 @@ class PaythorAdapter
         $storeId = (int) ($request['store_id'] ?? 0);
         $client  = $this->getClient($storeId);
 
+        $fallbackTxnId = (string)($request['paythor_token'] ?? '');
+        if ($fallbackTxnId === '') {
+            $fallbackTxnId = (string)($request['increment_id'] ?? '');
+        }
+        if ($fallbackTxnId === '') {
+            $fallbackTxnId = 'paythor-auth-' . (string)($request['order_id'] ?? '0') . '-' . str_replace('.', '', uniqid('', true));
+        }
+
         $this->logger->debug('PaythorAdapter::createPaymentFromGateway', [
             'order_id' => $request['order_id'] ?? null,
             'amount'   => $request['amount'] ?? null,
+            'txn_fallback' => $fallbackTxnId,
         ]);
 
         return [
             'paythor_status'   => 'initiated',
-            'transaction_id'   => $request['paythor_token'] ?? '',
+            'transaction_id'   => $fallbackTxnId,
             'order_id'         => $request['order_id'] ?? null,
             'amount'           => $request['amount'] ?? 0,
             'currency'         => $request['currency'] ?? 'TRY',
