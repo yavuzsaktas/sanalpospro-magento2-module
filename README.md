@@ -295,3 +295,16 @@ src/app/code/Paythor/SanalPosPro/
 | Raw SQL prohibited | Repository pattern and Collection usage |
 | after/before instead of around plugin | No plugin was used; DI preference and observer were preferred |
 | Core code modification prohibited | Fully separate module; no preference/plugin |
+
+## Our Team:
+Alperen Kaymaz: Software Developer
+ alperen.kaymaz@eticsoft.com
+
+Batuhan Mutlu: Software Developer 
+batuhan.mutlu@eticsoft.com
+
+Reem Elimam: Software Developer 
+reem.elimam@eticsoft.com
+
+Yavuz Selim Aktaş: Software Developer 
+yavuz.aktas@eticsoft.com
