@@ -45,7 +45,18 @@ Set up the module skeleton, register it with Magento, and create the admin panel
 bin/magento setup:upgrade
 bin/magento setup:di:compile
 ```
-<img width="580" height="435" alt="d9303ee3-a179-4855-b7b8-a788dd756b3b_image_for_silan_39305102_580x435" src="https://github.com/user-attachments/assets/a3b6d1f9-2fba-43ce-9ac7-dfadb0680c95" />
+
+<img width="512" height="266" alt="image" src="https://github.com/user-attachments/assets/0236ba9c-0238-4728-af5c-7b186bb868d5" />
+
+<img width="512" height="643" alt="image" src="https://github.com/user-attachments/assets/2b6aeafa-af04-41e6-bf68-74ed576e5317" />
+
+<img width="512" height="234" alt="image" src="https://github.com/user-attachments/assets/66219757-fdb3-4309-ad05-649c8017d7cf" />
+
+<img width="512" height="239" alt="image" src="https://github.com/user-attachments/assets/4ccacb7d-5a13-4356-ac08-6ab714295832" />
+
+<img width="512" height="237" alt="image" src="https://github.com/user-attachments/assets/3d1ad807-9ec1-4c7a-8ead-2f39a425c4a4" />
+
+
 
 ---
 
@@ -147,6 +158,12 @@ Complete the rendering of the payment method as a Knockout.js UI Component on th
 5b. Callback bridge (SanalPosPro redirect -> Callback.php -> postMessage)
        └─ Same flow
 ```
+<img width="512" height="234" alt="image" src="https://github.com/user-attachments/assets/0c7afef5-66fb-475d-8e50-8e07bc77d548" />
+
+<img width="512" height="640" alt="image" src="https://github.com/user-attachments/assets/c32934db-fae4-472b-b5f9-fb852d309fb2" />
+
+<img width="512" height="631" alt="image" src="https://github.com/user-attachments/assets/73497cca-2d7b-4d33-ac74-2488e62d7f0d" />
+
 
 ### Created / Updated Files
 
