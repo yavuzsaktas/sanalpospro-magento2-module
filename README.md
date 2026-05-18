@@ -45,6 +45,7 @@ Set up the module skeleton, register it with Magento, and create the admin panel
 bin/magento setup:upgrade
 bin/magento setup:di:compile
 ```
+<img width="580" height="435" alt="d9303ee3-a179-4855-b7b8-a788dd756b3b_image_for_silan_39305102_580x435" src="https://github.com/user-attachments/assets/a3b6d1f9-2fba-43ce-9ac7-dfadb0680c95" />
 
 ---
 
