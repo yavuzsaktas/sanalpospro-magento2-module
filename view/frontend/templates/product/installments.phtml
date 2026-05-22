@@ -1,0 +1,69 @@
+<?php
+/**
+ * SanalPosPro Modern Installment Theme — body markup.
+ *
+ * 1:1 port of the WooCommerce reference template
+ * (sanalpospro-payment-module/templates/installment_theme/modern.php).
+ *
+ * @var \Sanalpospro\SanalPosPro\Block\Product\Installments $block
+ */
+
+if (!$block->isEnabled()) {
+    return;
+}
+
+$activeFamilies = $block->getActiveCardFamilies();
+if (empty($activeFamilies)) {
+    return;
+}
+?>
+<div class="sppro-installment-container">
+    <div class="sppro-installment-tabs">
+        <div class="sppro-tab-header">
+            <?php foreach ($activeFamilies as $cardKey): ?>
+                <div class="sppro-tab-item" data-tab="<?= $escaper->escapeHtmlAttr($cardKey) ?>">
+                    <img src="<?= $escaper->escapeUrl($block->getCardImageUrl($cardKey)) ?>"
+                         alt="<?= $escaper->escapeHtmlAttr($cardKey) ?>"
+                         class="sppro-card-image"
+                         style="height: 30px;">
+                </div>
+            <?php endforeach; ?>
+        </div>
+
+        <div class="sppro-tab-content">
+            <?php foreach ($activeFamilies as $cardKey):
+                $rows = $block->getFamilyRows($cardKey);
+                ?>
+                <div class="sppro-tab-pane" data-tab-content="<?= $escaper->escapeHtmlAttr($cardKey) ?>">
+                    <table class="sppro-installment-table">
+                        <thead>
+                            <tr>
+                                <th><?= $escaper->escapeHtml(__('Installment')) ?></th>
+                                <th><?= $escaper->escapeHtml(__('Monthly Pay.')) ?></th>
+                                <th><?= $escaper->escapeHtml(__('Total Amount')) ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($rows as $row):
+                                $months = (int)$row['months'];
+                                $label = sprintf(__('%d Installment'), $months);
+                                ?>
+                                <tr>
+                                    <td><?= $escaper->escapeHtml($label) ?></td>
+                                    <td><?= /* @noEscape */ $row['monthly'] ?></td>
+                                    <td><?= /* @noEscape */ $row['total'] ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+
+    <div class="sppro-installment-note">
+        <p><?= $escaper->escapeHtml(__(
+            'Installment amounts are estimated and may vary depending on the bank\'s campaigns and interest rates.'
+        )) ?></p>
+    </div>
+</div>

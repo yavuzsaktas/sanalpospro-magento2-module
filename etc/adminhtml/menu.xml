@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Sanalpospro_SanalPosPro::paythor_root"
+             title="SanalPos Pro"
+             module="Sanalpospro_SanalPosPro"
+             sortOrder="920"
+             parent="Magento_Backend::stores"
+             resource="Sanalpospro_SanalPosPro::connect"/>
+
+        <add id="Sanalpospro_SanalPosPro::connect_menu"
+             title="Connect Account"
+             module="Sanalpospro_SanalPosPro"
+             sortOrder="10"
+             parent="Sanalpospro_SanalPosPro::paythor_root"
+             action="paythor_sanalpospro/connect/index"
+             resource="Sanalpospro_SanalPosPro::connect"/>
+    </menu>
+</config>
